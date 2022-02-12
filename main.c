@@ -139,3 +139,6 @@ int main()
     exit(0);
   }
 }
+
+//! cria 3 filhos
+//! se comunica com 2 filhos

@@ -47,8 +47,7 @@ int main()
     close(fd[0]);
 
     printf("Digite o numero 1 e o numero 2: ");
-    scanf("%d", &num1);
-    scanf("%d", &num2);
+    scanf("%d %d", &num1, &num2);
     write(fd[1], &num1, sizeof(num1));
     write(fd[1], &num2, sizeof(num2));
 
