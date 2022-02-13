@@ -28,6 +28,7 @@ int main()
   int pipefds1[2];
   int pipefds2[2];
   char *username;
+  int segundo=-1;
   /* da o nome do usuario */
 
   /* Cria um tubo. Isto deve ser feito antes do fork para que
@@ -38,8 +39,7 @@ int main()
   scanf("%d", &x);
   scanf("%d", &y);
 
-  if (pipe(pipefds1) < 0)
-  {
+  if (pipe(pipefds1) < 0){
     perror("Error pipe");
     exit(1);
   }
@@ -50,48 +50,49 @@ int main()
     exit(1);
   }
 
-  if ((pid = fork()) < 0)
-  { // primeiro filho
-    perror("Error fork");
-    exit(1);
-  }
-  if (pid == 0)
-  {
+  pid = fork();
+
+  if (pid == 0){
     printf("\nSou filho 1\n");
     close(0); // fecha a entrada padrao
-    close(pipefds1[1]);
+    close(pipefds1[1]);//fecha para escrita
 
     int buf;
-    //! guentae discord deu ruim
+    char letras[150];
+ 
     if (read(pipefds1[0], &buf, sizeof(int)) < 0) /* leitura na saida do tubo*/
       perror("Error: reading message");
     printf("Lido do tubo 1-->%c\n", buf);
+    
+     
+    if (read(pipefds1[0], letras, 150) < 0) /* leitura na saida do tubo*/
+      perror("Error: reading message");
+      printf("Frase do tubo 1-->%s\n", letras);
+    
     close(pipefds1[0]);
   }
 
-  if (pid > 0)
-  {
-    int segundo = fork(); // segundo filho
+  if (pid > 0){
+     segundo = fork(); // segundo filho
 
-    if (segundo == 0)
-    {
+    if (segundo == 0){
       printf("\nSou filho 2\n");
       close(0); // fecha a entrada padrao
       close(pipefds2[1]);
 
       int buf2;
       char frase[100];
-      //! guentae discord deu ruim
+ 
+
       if (read(pipefds2[0], &buf2, sizeof(int)) < 0) /* leitura na saida do tubo*/
         perror("Error: reading message");
-      printf("Lido do tubo 2-->%c\n", buf2);
+        printf("Lido do tubo 2-->%c\n", buf2);
 
       close(pipefds1[0]);
     }
   }
 
-  if (pid > 0)
-  {
+  if (segundo > 0){
     int terceiro = fork(); // terceiro filho
     if (terceiro == 0)
       printf("\nSou filho 3\n");
@@ -100,8 +101,7 @@ int main()
   /* Codigo do filho:
    * executa o comando mail e entao envia ao username
    * a mensagem contida no tubo */
-  if (pid == 0)
-  {
+  if (pid == 0){
     // /*      redirige a stdin para o tubo; o comando executado em seguida tera
     //     como entrada (uma mensagem) a leitura do tubo */
     //     close(0);
@@ -115,15 +115,15 @@ int main()
     //     exit(1);
   }
 
-  if (pid > 0)
-  {
+  if (pid > 0){
+    char msg1[150] = "Meu filho, crie e envie para o seu irmão P3 um array de tamanho randômico entre 100 e 200, preenchido completamente com o valor X";
 
     /* Codigo do pai:
      * escreve uma mensagem no tubo 1*/
     close(pipefds1[0]);
     fp = fdopen(pipefds1[1], "w");
     fprintf(fp, "%d", x);
-    fprintf(fp, "Meu filho, crie e envie para o seu irmão P3 um array de tamanho randômico entre 100 e 200, preenchido completamente com o valor X");
+    fprintf(fp,"%s" ,msg1);
     fclose(fp);
 
     /* escreve uma mensagem no tubo 2*/
@@ -133,8 +133,7 @@ int main()
     fclose(fp);
 
     /* Espera da morte do processo filho */
-    while (wait((int *)0) != pid)
-      ;
+    while (wait((int *)0) != pid);
 
     exit(0);
   }
